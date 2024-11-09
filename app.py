@@ -95,7 +95,7 @@ def hello():
     <body>
         <div class="container">
             <div class="header">
-                <div class="bold">Hello DOCKERian, Welcome ! ! !</div>
+                <div class="bold">Hello motherfucker, Welcome ! ! !</div>
                 <div class="message">Firstly, Congratulations for deploying the Python Application successfully</div>
                 <img src="https://d2gbo5uoddvg5.cloudfront.net/images/gifs/logo-docker.gif" class="gif" alt="Docker Gif" width="150">
             </div>
