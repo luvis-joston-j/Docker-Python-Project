@@ -7,118 +7,104 @@ app = Flask(__name__)
 def hello():
     html_content = '''
     <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Docker Course</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                margin: 0;
-                background-color: #f4f4f4;
-            }
-            .container {
-                text-align: center;
-                background: #fff;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                width: 100%;
-                max-width: 800px;
-            }
-            .header {
-                margin-bottom: 20px;
-            }
-            .title {
-                color: #0044cc;
-                font-weight: bold;
-                font-size: 24px;
-                font-family: 'Berlin Sans FB', sans-serif;
-            }
-            .subtitle {
-                font-style: italic;
-                color: #000;
-                font-family: 'Times New Roman', Times, serif;
-            }
-            .name {
-                font-weight: bold;
-                font-size: 24px;
-                font-family: 'Pacifico', cursive;
-            }
-            .message {
-                font-style: italic;
-                margin-bottom: 10px;
-            }
-            .gif {
-                margin-bottom: 20px;
-            }
-            .button {
-                display: inline-block;
-                padding: 10px 20px;
-                margin: 10px;
-                font-size: 16px;
-                color: #fff;
-                text-decoration: none;
-                border-radius: 5px;
-                display: flex;
-                align-items: center;
-            }
-            .button img {
-                margin-right: 10px;
-            }
-            .docker-button {
-                background-color: #0db7ed;
-            }
-            .linkedin-button {
-                background-color: #0077b5;
-            }
-            .footer {
-                margin-top: 20px;
-                font-family: 'Times New Roman', Times, serif;
-            }
-            .profile-pic {
-                position: absolute;
-                bottom: 10px;
-                right: 10px;
-                border-radius: 50%;
-                width: 120px;
-                height: 120px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="bold">Hello motherfucker, Welcome ! ! !</div>
-                <div class="message">Firstly, Congratulations for deploying the Python Application successfully</div>
-                <img src="https://d2gbo5uoddvg5.cloudfront.net/images/gifs/logo-docker.gif" class="gif" alt="Docker Gif" width="150">
-            </div>
-            <div>
-                <div class="subtitle">Welcome to</div>
-                <div class="title">Docker - Basics to Brilliance Course</div>
-                <div class="subtitle">by</div>
-                <div class="name">Kastro Kiran V</div>
-            </div>
-            <a href="https://www.youtube.com/playlist?list=PLs-PsDpuAuTeNx3OgGQ1QrpNBo-XE6VBh" class="button docker-button" target="_blank">
-                <img src="https://www.docker.com/wp-content/uploads/2022/03/Moby-logo.png" alt="Docker Icon" width="20"> Docker - Basics to Brilliance
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display raf</title>
+    <style>
+        /* Basic CSS styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url(image.jpg) ;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+   </style>
+</head>
+<body>
+    <div align="center">
+        <p align="center" style="font-size: 48px; font-weight: bold; color:#f39c12; font-family: 'Poppins', sans-serif; text-shadow: 3px 3px 10px rgba(0,0,0,0.3);">
+          Hi, I am <span style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;color:white;text-shadow:black 5px 5px 5px;">LUVIS JOSTON J</span> 👋
+        </p>
+        
+        
+        
+           <img src="https://user-images.githubusercontent.com/74038190/213866269-5d00981c-7c98-46d7-8a8e-16f462f15227.gif" alt="fire" style="width:150px;margin: 10px; box-shadow: 0px 4px 12px rgba(255, 111, 0, 0.6); transition: transform 0.2s ease-in-out;">
+          <img src="jz.gif"  width="300px" alt="pic" style="border-radius: 50%; border: 5px solid #fff; box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.5);">
+           <img src="https://user-images.githubusercontent.com/74038190/213866269-5d00981c-7c98-46d7-8a8e-16f462f15227.gif" alt="fire" style="width:150px;margin: 10px; box-shadow: 0px 4px 12px rgba(255, 111, 0, 0.6); transition: transform 0.2s ease-in-out;">
+          <h1 style="font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;color:white;text-shadow:black 5px 5px 5px;">
+            <img src="https://img.shields.io/badge/-Hey%20there!-brightgreen?style=for-the-badge" alt="Hey there!" style="vertical-align:middle;"><br>
+            LUVIS JOSTON J
+          </h1>
+          
+          <img src="https://user-images.githubusercontent.com/74038190/212284115-f47cd8ff-2ffb-4b04-b5bf-4d1c14c0247f.gif" width="500">
+          <h3 style="font-size: 28px; color:#3498db; font-family: 'Roboto', sans-serif; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); letter-spacing: 1px;">
+            <img src="https://img.shields.io/badge/-DEVOPS%20ENGINEER-8e44ad?style=for-the-badge" alt="Backend Skills" style="vertical-align:middle; margin: 5px;">
+            <img src="https://img.shields.io/badge/-Noob%20Developer-grey?style=for-the-badge" alt="DEVOPS" style="vertical-align:middle; margin: 5px;">
+            <img src="https://img.shields.io/badge/-🇮🇳%20India-00BFFF?style=for-the-badge" alt="Location" style="vertical-align:middle; margin: 5px;">
+            <img src="https://img.shields.io/badge/-🚀%20Ready%20to%20Launch-critical?style=for-the-badge" alt="Ready to Launch" style="vertical-align:middle; margin: 5px;">
+          </h3>
+          <p style="margin-top: 35px;">
+            <a href="https://www.linkedin.com/in/luvis-joston-j-356806323?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank">
+              <img src="https://img.shields.io/badge/Connect%20on%20LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="Connect on LinkedIn" style="margin: 10px; box-shadow: 0px 4px 12px rgba(10, 102, 194, 0.6); transition: transform 0.2s ease-in-out;">
             </a>
-            <a href="https://www.linkedin.com/in/kastro-kiran/" class="button linkedin-button" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn Icon" width="20"> LinkedIn Connect
+            <a href="https://github.com/luvis-joston-j/kube-3/blob/main/README.md" target="_blank">
+              <img  width="200" height="50" src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fwr32qr8yefns8neks37z.png" alt="Follow on Twitter" style="margin: 10px; box-shadow: 0px 4px 12px rgba(29, 161, 242, 0.6); transition: transform 0.2s ease-in-out;">
             </a>
+          </p>
+          <p style="margin-top: 30px;">
+            <img src="https://img.shields.io/badge/-Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" style="margin: 10px; box-shadow: 0px 4px 12px rgba(55, 118, 171, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="100" height="60" src="https://logos-world.net/wp-content/uploads/2021/08/Amazon-Web-Services-AWS-Logo.png" alt="aws" style="margin: 10px; box-shadow: 0px 4px 12px rgba(9, 46, 32, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="100" height="50" src="https://brandslogos.com/wp-content/uploads/images/large/jenkins-logo.png" alt="jenkins" style="margin: 10px; box-shadow: 0px 4px 12px rgba(9, 46, 32, 0.6); transition: transform 0.2s ease-in-out;">
+            <img  width="90" height="60" src="https://brandslogos.com/wp-content/uploads/images/large/docker-logo.png" alt="github" style="margin: 10px; box-shadow: 0px 4px 12px rgba(255, 69, 0, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="90" height="60" src="https://brandslogos.com/wp-content/uploads/images/large/github-logo.png" alt="docker" style="margin: 10px; box-shadow: 0px 4px 12px rgba(247, 223, 30, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="90" height="60" src="https://download.logo.wine/logo/Kubernetes/Kubernetes-Logo.wine.png" alt="terraform" style="margin: 10px; box-shadow: 0px 4px 12px rgba(0, 59, 87, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="90" height="60" src="https://upload.wikimedia.org/wikipedia/commons/0/04/Terraform_Logo.svg" alt="MySQL" style="margin: 10px; box-shadow: 0px 4px 12px rgba(68, 121, 161, 0.6); transition: transform 0.2s ease-in-out;">
+            <br><br>
+            <img width="90" height="60" src="https://upload.wikimedia.org/wikipedia/commons/7/76/Ubuntu-logo-2022.svg" alt="TensorFlow" style="margin: 10px; box-shadow: 0px 4px 12px rgba(255, 111, 0, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="100" height="60" src="https://logodownload.org/wp-content/uploads/2022/05/linux-logo-0.png" alt="Flutter" style="margin: 10px; box-shadow: 0px 4px 12px rgba(2, 86, 155, 0.6); transition: transform 0.2s ease-in-out;">
+            <img width="90"  src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fgit-scm.com%2Fimages%2Flogos%2Fdownloads%2FGit-Logo-1788C.png" alt="Dart" style="margin: 10px; box-shadow: 0px 4px 12px rgba(1, 117, 194, 0.6); transition: transform 0.2s ease-in-out;">
+          </p>
+          <p style="margin-top: 30px;">
+            <img src="https://img.shields.io/badge/Languages-Python%20%7C%20JavaScript%20%7C%20C%2B%2B%20%7C%20Java%20%7C%20HTML%20%7C%20CSS%20%7C%20-4682B4?style=for-the-badge" alt="Languages" style="margin: 10px;">
+            <br><br>
+
+          </p>
+         <div align="">
+            <img src="https://cultofthepartyparrot.com/parrots/hd/githubparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/flags/hd/iranparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/asyncparrot.gif" width="36" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/60fpsparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/jumpingparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/opensourceparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/dealwithitnowparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/hypnoparrotlight.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/databaseparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/fixparrot.gif" width="36" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/laptop_parrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/spinningparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/levitationparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/meldparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/slomoparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/moonwalkingparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/stableparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/scienceparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/pirateparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/footballparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/illuminatiparrot.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/hypnoparrotdark.gif" width="25" height="25"/>
+            <img src="https://cultofthepartyparrot.com/parrots/hd/mustacheparrot.gif" width="25" height="25"/>
         </div>
-        <div class="footer">
-            Happy Learning!<br>
-            &copy; Kastro
         </div>
-        <img src="https://media.licdn.com/dms/image/D5603AQHJB_lF1d9OSw/profile-displayphoto-shrink_800_800/0/1718971147172?e=1724889600&v=beta&t=RD4RRp_ogwCNex7BkOmy0oO68NkL5ParvKJh8y1_05s" alt="Profile Picture" class="profile-pic">
-    </body>
-    </html>
+</body>
+</html>
+
     '''
     return render_template_string(html_content)
 
