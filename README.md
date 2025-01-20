@@ -14,8 +14,10 @@ $ docker run -d -p 5000:5000 simple-flask-app
 
 The application will be accessible at http:127.0.0.1:5000
 <h1>dependencies and libraries</h1>
+'''bash
 sudo apt install python3-venv<br>
 python3 -m venv myprojectenv<br>
 source myprojectenv/bin/activate<br>
 pip install Flask<br>
 pip install pymongo<br>
+'''
