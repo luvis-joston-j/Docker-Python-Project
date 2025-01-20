@@ -21,8 +21,8 @@ $ python3 -m venv myprojectenv
 $ source myprojectenv/bin/activate
 $ pip install Flask
 $ pip install pymongo
+$ apt install  python3-pip
 $ mongosh
 $ show dbs;
 $ use <database>
-$ 
 ```
