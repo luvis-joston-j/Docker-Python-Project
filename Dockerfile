@@ -4,5 +4,4 @@ COPY . /app
 WORKDIR /app
 EXPOSE 5000
 RUN pip install flask
-RUN pip install pymongo
 ENTRYPOINT ["python", "app.py"]
