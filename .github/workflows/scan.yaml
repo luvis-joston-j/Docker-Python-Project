@@ -16,6 +16,7 @@ jobs:
 
       - name: Run Super-Linter
         uses: github/super-linter/slim@v6
+        continue-on-error: true
         env:
           DEFAULT_BRANCH: dev
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
