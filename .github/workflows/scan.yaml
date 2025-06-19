@@ -74,7 +74,8 @@ jobs:
       - name: Set up JDK (required for SonarScanner)
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+            java-version: '17'
+            distribution: 'temurin'
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
