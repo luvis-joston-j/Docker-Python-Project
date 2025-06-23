@@ -1,0 +1,16 @@
+# Formatters
+black==24.4.2
+isort==5.13.2
+
+# Linters
+flake8==7.0.0
+
+# Type checker
+mypy==1.10.0
+
+# Optional: lightning-fast linter/formatter
+ruff==0.4.3
+
+# Required for FastAPI type checking
+fastapi
+pydantic
