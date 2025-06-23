@@ -1,51 +1,258 @@
-name: Lint & Type Check FastAPI Project
+name: Lint → SonarQube → Email → Trivy
 
 on:
   push:
-    branches: [dev]
+    branches:
+      - dev
   pull_request:
+    branches:
+      - dev
 
 jobs:
   lint:
-    name: Lint and Type Check
+    name: Lint Code with Super-Linter
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Run Super-Linter
+        id: superlint
+        uses: github/super-linter/slim@v6
+        continue-on-error: false
+        env:
+          DEFAULT_BRANCH: dev
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_PYTHON: true
+          FILTER_REGEX_EXCLUDE: .github/workflows/.*
+
+      - name: Send Success Email
+        if: steps.superlint.outcome == 'success'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "✅ Super-Linter Passed for ${{ github.repository }}"
+          body: |
+            Super-Linter passed 🎉
+
+            Repo: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: luvis@sirpi.io
+          from: Linter Bot <developer@example.com>
+
+      - name: Send Failure Email
+        if: steps.superlint.outcome == 'failure'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "❌ Super-Linter Failed for ${{ github.repository }}"
+          body: |
+            Super-Linter failed 🚨
+
+            Repo: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Please check the logs in the Actions tab.
+          to: luvis@sirpi.io
+          from: Linter Bot <developer@example.com>
+
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: lint
+    concurrency:
+      group: sonarqube-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install poetry
 
-      - name: Run black (check only)
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Handle absence of tests and generate dummy coverage
         run: |
-          black --check . 2>&1 | tee black-report.txt
+          echo "No test files found, skipping coverage generation."
+          mkdir -p coverage
+          touch coverage/coverage.xml
 
-      - name: Run isort (check only)
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: ./
+          args: >
+            -Dsonar.verbose=true
+            -Dsonar.scm.provider=git
+            -Dsonar.projectVersion=${{ github.sha }}
+
+      - name: Wait for Analysis & Check Quality Gate
         run: |
-          isort . --check-only 2>&1 | tee isort-report.txt
+          echo "🔍 Reading SonarQube analysis task ID..."
+          TASK_ID=$(grep ceTaskId .scannerwork/report-task.txt | cut -d'=' -f2)
+          echo "⏳ Polling for analysis completion..."
+          STATUS="PENDING"
+          while [ "$STATUS" != "SUCCESS" ]; do
+            sleep 5
+            STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "${{ secrets.SONAR_HOST_URL }}/api/ce/task?id=$TASK_ID" | jq -r '.task.status')
+            echo "Current status: $STATUS"
+          done
+          ANALYSIS_ID=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "${{ secrets.SONAR_HOST_URL }}/api/ce/task?id=$TASK_ID" | jq -r '.task.analysisId')
+          echo "✅ Checking Quality Gate..."
+          QG_STATUS=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?analysisId=$ANALYSIS_ID" | jq -r '.projectStatus.status')
+          echo "Quality Gate status: $QG_STATUS"
+          if [ "$QG_STATUS" != "OK" ]; then
+            echo "❌ Quality Gate failed!"
+            exit 1
+          else
+            echo "✅ Quality Gate passed!"
+          fi
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-      - name: Run flake8
+      - name: Download SonarQube Issues Report
         run: |
-          flake8 . --exit-zero --output-file=flake8-report.txt
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=Python&types=BUG,VULNERABILITY,CODE_SMELL" \
+            -o sonar_issues.json
+          echo "Saved sonar_issues.json"
 
-      - name: Run mypy
+      - name: Convert Issues Report to CSV
         run: |
-          mypy . --ignore-missing-imports 2>&1 | tee mypy-report.txt
+          jq -r '
+            ["Key","Severity","Type","Component","Message"],
+            (.issues[] | [.key, .severity, .type, .component, .message])
+            | @csv
+          ' sonar_issues.json > sonar_issues.csv
 
-      - name: Upload linting reports
+      - name: Upload SonarQube Report
         uses: actions/upload-artifact@v4
         with:
-          name: lint-reports
+          name: sonar-quality-report
           path: |
-            black-report.txt
-            isort-report.txt
-            flake8-report.txt
-            mypy-report.txt
+            sonar_issues.json
+            sonar_issues.csv
+
+  notify-sonar-result:
+    name: Email Result of SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: sonarqube
+    steps:
+      - name: Download Sonar Report
+        uses: actions/download-artifact@v4
+        with:
+          name: sonar-quality-report
+          path: sonar-quality-report
+
+      - name: Send Email if SonarQube Passed
+        if: ${{ needs.sonarqube.result == 'success' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: ✅ SonarQube Scan Passed on ${{ github.ref_name }}
+          to: luvis@sirpi.io
+          from: GitHub CI <noreply@example.com>
+          body: |
+            ✅ SonarQube scan passed for `${{ github.ref_name }}`
+            View the full report at:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          attachments: |
+            sonar-quality-report/sonar_issues.json
+            sonar-quality-report/sonar_issues.csv
+
+      - name: Send Email if SonarQube Failed
+        if: ${{ needs.sonarqube.result == 'failure' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: ❌ SonarQube Scan Failed on ${{ github.ref_name }}
+          to: luvis@sirpi.io
+          from: GitHub CI <noreply@example.com>
+          body: |
+            ❌ SonarQube scan failed for `${{ github.ref_name }}`
+            Check report for details:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          attachments: |
+            sonar-quality-report/sonar_issues.json
+            sonar-quality-report/sonar_issues.csv
+
+  trivy:
+    name: Docker Build and Trivy Scan
+    runs-on: ubuntu-latest
+    needs: notify-sonar-result
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create reports directory
+        run: mkdir -p trivy-reports
+
+      - name: Trivy FS Scan (source code)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          severity: CRITICAL,HIGH
+          output: trivy-reports/fs-report.txt
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Trivy Image Scan (Docker image)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: image
+          scan-ref: sirpi/alcad-erp-api:1.0.0-dev
+          format: table
+          severity: CRITICAL,HIGH
+          output: trivy-reports/image-report.txt
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: trivy-reports/
