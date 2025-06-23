@@ -45,7 +45,15 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
+          
+      - name: Wait for Quality Gate result
+        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+        with:
+            scanTimeout: '300'
+        env:
+           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+ 
   notify-sonar-result:
     name: Email Result of SonarQube Scan
     runs-on: ubuntu-latest
