@@ -28,7 +28,7 @@ jobs:
             -e VALIDATE_ALL_CODEBASE=true \
             -e VALIDATE_PYTHON=true \
             -v ${{ github.workspace }}:/tmp/lint \
-            ghcr.io/github/super-linter:slim-v6 \
+            ghcr.io/github/super-linter:slim-latest \
             | tee lint-reports/lint-report.txt
 
       - name: Upload Lint Report
