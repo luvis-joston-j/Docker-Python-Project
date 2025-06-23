@@ -15,6 +15,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Pull Super-Linter Image
+        run: docker pull ghcr.io/github/super-linter:slim-v6
+
       - name: Run Super-Linter and Save Report
         id: linter
         run: |
@@ -25,7 +28,7 @@ jobs:
             -e VALIDATE_ALL_CODEBASE=true \
             -e VALIDATE_PYTHON=true \
             -v ${{ github.workspace }}:/tmp/lint \
-            github/super-linter:slim-v6 \
+            ghcr.io/github/super-linter:slim-v6 \
             | tee lint-reports/lint-report.txt
 
       - name: Upload Lint Report
@@ -131,9 +134,9 @@ jobs:
           body: |
             Hello Developer,
 
-            Here is the Super-Linter report for `${{ github.ref_name }}`.
+            Attached is the Super-Linter report for `${{ github.ref_name }}`.
 
-            ✅ Run Details:
+            ✅ Run details:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Thanks,
