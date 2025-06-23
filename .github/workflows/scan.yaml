@@ -1,9 +1,8 @@
-
 name: Lint and Trivy Scan
 
 on:
   push:
-    branches: [ dev]
+    branches: [dev]
   pull_request:
 
 jobs:
@@ -30,6 +29,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Notify Docker Build Started
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            🛠️ Docker build has started for `${{ github.head_ref }}`.
+            We'll notify once it's complete!
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -63,6 +70,7 @@ jobs:
         with:
           name: trivy-reports
           path: trivy-reports/
+
   sonarqube:
     name: SonarQube Scan
     runs-on: ubuntu-latest
@@ -74,8 +82,8 @@ jobs:
       - name: Set up JDK (required for SonarScanner)
         uses: actions/setup-java@v3
         with:
-            java-version: '17'
-            distribution: 'temurin'
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
@@ -83,15 +91,4 @@ jobs:
           projectBaseDir: .
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }
-      - name: Notify Docker Build Started
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-         message: |
-          🛠️ Docker build has started for `${{ github.head_ref }}`.
-               We'll notify once it's complete!
-
-
-          
-
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
