@@ -1,55 +1,38 @@
-name: Python Lint with Full Reports
+name: Super Linter
 
 on:
   push:
-    branches: [ dev ]
+    branches: [dev]
   pull_request:
 
 jobs:
   lint:
-    name: Python Linters + Log Reports
+    name: Lint Code with Super-Linter
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+      - name: Run Super-Linter
+        uses: github/super-linter/slim@v6
+        continue-on-error: true
+        env:
+          DEFAULT_BRANCH: dev
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_PYTHON: true
 
-      - name: Install Linting Tools
+      - name: Create Lint Log Info
+        if: always()
         run: |
-          pip install ruff black mypy
+          mkdir -p logs
+          echo "🔗 Download full Super-Linter output logs here:" > logs/README.txt
+          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> logs/README.txt
 
-      - name: Run Ruff (save log)
-        run: |
-          ruff check . > ruff_report.txt 2>&1 || true
-
-      - name: Run Black (save log)
-        run: |
-          black --check . > black_report.txt 2>&1 || true
-
-      - name: Run Mypy (save log)
-        run: |
-          mypy . > mypy_report.txt 2>&1 || true
-
-      - name: Combine all reports
-        run: |
-          echo "=== Ruff Report ===" > lint-report.txt
-          cat ruff_report.txt >> lint-report.txt
-          echo -e "\n\n=== Black Report ===" >> lint-report.txt
-          cat black_report.txt >> lint-report.txt
-          echo -e "\n\n=== Mypy Report ===" >> lint-report.txt
-          cat mypy_report.txt >> lint-report.txt
-
-      - name: Upload all individual reports
+      - name: Upload Lint Info as Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: python-lint-reports
-          path: |
-            ruff_report.txt
-            black_report.txt
-            mypy_report.txt
-            lint-report.txt
+          name: super-linter-log-info
+          path: logs/
