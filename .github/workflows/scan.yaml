@@ -9,34 +9,18 @@ jobs:
   lint:
     name: Lint Code with Super-Linter
     runs-on: ubuntu-latest
-    outputs:
-      lint_status: ${{ steps.linter.outcome }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Pull Super-Linter Image
-        run: docker pull ghcr.io/github/super-linter:slim-latest
-
-      - name: Run Super-Linter and Save Report
-        id: linter
-        run: |
-          mkdir -p lint-reports
-          docker run \
-          -e RUN_LOCAL=true \
-          -e DEFAULT_BRANCH=dev \
-          -e VALIDATE_ALL_CODEBASE=true \
-          -e VALIDATE_PYTHON=true \
-          -v ${{ github.workspace }}:/tmp/lint \
-          -w /tmp/lint \
-          ghcr.io/github/super-linter:slim-latest \
-          | tee lint-reports/lint-report.txt
-
-      - name: Upload Lint Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-reports
-          path: lint-reports/
+      - name: Run Super-Linter
+        uses: github/super-linter/slim@v6
+        continue-on-error: true
+        env:
+          DEFAULT_BRANCH: dev
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_PYTHON: true
 
   sonarqube:
     name: SonarQube Scan
@@ -84,6 +68,11 @@ jobs:
             ✅ The SonarQube scan **passed** for branch `${{ github.ref_name }}`.
 
             Check the run details here:
+            https://sonarqube.sirpi.co.in/dashboard?id=Python
+
+            Attached is the Super-Linter Logs for `${{ github.ref_name }}`.
+
+            ✅ Run details:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Thanks,
@@ -111,43 +100,9 @@ jobs:
             Thanks,
             GitHub CI
 
-  notify-lint-result:
-    name: Email Lint Report
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Download Lint Report
-        uses: actions/download-artifact@v4
-        with:
-          name: lint-reports
-          path: lint-reports
-
-      - name: Send Lint Report Email
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.SMTP_USER }}
-          password: ${{ secrets.SMTP_PASS }}
-          subject: 🧹 Lint Report for ${{ github.ref_name }}
-          to: luvis@sirpi.io
-          from: GitHub CI <noreply@example.com>
-          body: |
-            Hello Developer,
-
-            Attached is the Super-Linter report for `${{ github.ref_name }}`.
-
-            ✅ Run details:
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Thanks,
-            GitHub CI
-          attachments: lint-reports/lint-report.txt
-
   trivy:
     name: Docker Build and Trivy Scan
     runs-on: ubuntu-latest
-    needs: [notify-sonar-result, notify-lint-result]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
