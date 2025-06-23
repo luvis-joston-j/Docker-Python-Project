@@ -58,12 +58,12 @@ jobs:
         if: ${{ needs.sonarqube.result == 'success' }}
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp.example.com
+          server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
           subject: ✅ SonarQube Scan Passed on ${{ github.ref_name }}
-          to: developer@example.com
+          to: luvis@sirpi.io
           from: GitHub CI <noreply@example.com>
           body: |
             Hello Developer,
