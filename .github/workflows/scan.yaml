@@ -9,24 +9,36 @@ jobs:
   lint:
     name: Lint Code with Super-Linter
     runs-on: ubuntu-latest
+    outputs:
+      lint-log: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Super-Linter
-        uses: github/super-linter/slim@v6
-        continue-on-error: true
-        env:
-          DEFAULT_BRANCH: dev
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          VALIDATE_ALL_CODEBASE: true
-          VALIDATE_PYTHON: true
+      - name: Run Super-Linter and save logs
+        run: |
+          mkdir -p lint-logs
+          docker run --rm -e RUN_LOCAL=true \
+            -e VALIDATE_ALL_CODEBASE=true \
+            -e VALIDATE_PYTHON=true \
+            -e DEFAULT_BRANCH=dev \
+            -v "${PWD}:/tmp/lint" \
+            -w "/tmp/lint" \
+            github/super-linter:slim-v6 > lint-logs/super-linter-output.log || true
+
+      - name: Upload Linter Logs
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: super-linter-report
+          path: lint-logs/super-linter-output.log
 
   sonarqube:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     needs: lint
-    continue-on-error: true
+    outputs:
+      report-path: ${{ steps.upload.outputs.artifact-id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,27 +50,51 @@ jobs:
           distribution: 'temurin'
 
       - name: SonarQube Scan
-        id: sonar
         uses: SonarSource/sonarqube-scan-action@v2
         with:
           projectBaseDir: .
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          
+
       - name: Wait for Quality Gate result
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         with:
-            scanTimeout: '300'
+          scanTimeout: '300'
         env:
-           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
- 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Download SonarQube Issues Report
+        run: |
+          curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+            "${{ secrets.SONAR_HOST_URL }}/api/issues/search?componentKeys=Python&types=BUG,VULNERABILITY,CODE_SMELL" \
+            -o sonar_issues.json
+          jq -r '
+            ["Key","Severity","Type","Component","Message"],
+            (.issues[] | [.key, .severity, .type, .component, .message])
+            | @csv
+          ' sonar_issues.json > sonar_issues.csv
+
+      - name: Upload SonarQube Report
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-quality-report
+          path: |
+            sonar_issues.json
+            sonar_issues.csv
+
   notify-sonar-result:
     name: Email Result of SonarQube Scan
     runs-on: ubuntu-latest
     needs: sonarqube
     steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: email-artifacts
+
       - name: Send Email if SonarQube Passed
         if: ${{ needs.sonarqube.result == 'success' }}
         uses: dawidd6/action-send-mail@v3
@@ -75,16 +111,16 @@ jobs:
 
             ✅ The SonarQube scan **passed** for branch `${{ github.ref_name }}`.
 
-            Check the run details here:
-            https://sonarqube.sirpi.co.in/dashboard?id=Python
-
-            Attached is the Super-Linter Logs for `${{ github.ref_name }}`.
+            Attached are the lint and SonarQube issue reports.
 
             ✅ Run details:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Thanks,
             GitHub CI
+          attachments: |
+            email-artifacts/super-linter-report/super-linter-output.log
+            email-artifacts/sonar-quality-report/sonar_issues.csv
 
       - name: Send Email if SonarQube Failed
         if: ${{ needs.sonarqube.result == 'failure' }}
@@ -102,15 +138,21 @@ jobs:
 
             ❌ The SonarQube scan **failed** for branch `${{ github.ref_name }}`.
 
-            Please investigate the issue:
+            Attached are the lint and SonarQube issue reports for investigation.
+
+            🔗 Run details:
             https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Thanks,
             GitHub CI
+          attachments: |
+            email-artifacts/super-linter-report/super-linter-output.log
+            email-artifacts/sonar-quality-report/sonar_issues.csv
 
   trivy:
     name: Docker Build and Trivy Scan
     runs-on: ubuntu-latest
+    needs: notify-sonar-result
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
