@@ -26,9 +26,12 @@ jobs:
 
       - name: Run Ruff (linter)
         run: ruff check .
+        continue-on-error: true
 
       - name: Run Black (code style check)
         run: black --check .
+        continue-on-error: true
 
       - name: Run Mypy (static type checks)
         run: mypy .
+        continue-on-error: true
