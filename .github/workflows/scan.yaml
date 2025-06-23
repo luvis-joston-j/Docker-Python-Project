@@ -1,24 +1,51 @@
-name: Lint → SonarQube → Email → Trivy
+name: Lint & Type Check FastAPI Project
 
 on:
   push:
-    branches: [dev]
+    branches: [main, dev]
   pull_request:
 
 jobs:
   lint:
-    name: Lint Code with Super-Linter
+    name: Lint and Type Check
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Super-Linter
-        uses: github/super-linter/slim@v6
-        continue-on-error: true
-        env:
-          DEFAULT_BRANCH: dev
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          VALIDATE_ALL_CODEBASE: true
-          VALIDATE_PYTHON: true
-          FILTER_REGEX_EXCLUDE: .github/workflows/.*\.ya?ml
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run black (check only)
+        run: |
+          black --check . 2>&1 | tee black-report.txt
+
+      - name: Run isort (check only)
+        run: |
+          isort . --check-only 2>&1 | tee isort-report.txt
+
+      - name: Run flake8
+        run: |
+          flake8 . --exit-zero --output-file=flake8-report.txt
+
+      - name: Run mypy
+        run: |
+          mypy . --ignore-missing-imports 2>&1 | tee mypy-report.txt
+
+      - name: Upload linting reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            black-report.txt
+            isort-report.txt
+            flake8-report.txt
+            mypy-report.txt
