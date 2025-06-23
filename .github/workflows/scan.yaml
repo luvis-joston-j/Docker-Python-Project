@@ -1,4 +1,4 @@
-name: Super Linter
+name: Lint → SonarQube → Email → Trivy
 
 on:
   push:
@@ -9,7 +9,6 @@ jobs:
   lint:
     name: Lint Code with Super-Linter
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,17 +21,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_PYTHON: true
-
-      - name: Create Lint Log Info
-        if: always()
-        run: |
-          mkdir -p logs
-          echo "🔗 Download full Super-Linter output logs here:" > logs/README.txt
-          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> logs/README.txt
-
-      - name: Upload Lint Info as Artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: super-linter-log-info
-          path: logs/
+          FILTER_REGEX_EXCLUDE: .github/workflows/.*\.ya?ml
