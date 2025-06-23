@@ -83,4 +83,15 @@ jobs:
           projectBaseDir: .
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }
+      - name: Notify Docker Build Started
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+         message: |
+          🛠️ Docker build has started for `${{ github.head_ref }}`.
+               We'll notify once it's complete!
+
+
+          
+
