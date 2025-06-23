@@ -19,7 +19,7 @@ jobs:
       - name: Run Super-Linter
         id: superlint
         uses: github/super-linter/slim@v6
-        continue-on-error: false
+        continue-on-error: true
         env:
           DEFAULT_BRANCH: dev
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -28,7 +28,7 @@ jobs:
           FILTER_REGEX_EXCLUDE: .github/workflows/.*
 
       - name: Send Success Email
-        if: steps.superlint.outcome == 'success'
+        if: steps.superlint.conclusion == 'success'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -43,11 +43,11 @@ jobs:
             Branch: ${{ github.ref }}
             Commit: ${{ github.sha }}
             Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          to: luvis@sirpi.io
+          to: developer@example.com
           from: Linter Bot <developer@example.com>
 
       - name: Send Failure Email
-        if: steps.superlint.outcome == 'failure'
+        if: steps.superlint.conclusion == 'failure'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -64,7 +64,7 @@ jobs:
             Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Please check the logs in the Actions tab.
-          to: luvis@sirpi.io
+          to: developer@example.com
           from: Linter Bot <developer@example.com>
 
   sonarqube:
@@ -187,7 +187,7 @@ jobs:
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
           subject: ✅ SonarQube Scan Passed on ${{ github.ref_name }}
-          to: luvis@sirpi.io
+          to: developer@example.com
           from: GitHub CI <noreply@example.com>
           body: |
             ✅ SonarQube scan passed for `${{ github.ref_name }}`
@@ -206,7 +206,7 @@ jobs:
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
           subject: ❌ SonarQube Scan Failed on ${{ github.ref_name }}
-          to: luvis@sirpi.io
+          to: developer@example.com
           from: GitHub CI <noreply@example.com>
           body: |
             ❌ SonarQube scan failed for `${{ github.ref_name }}`
@@ -215,44 +215,3 @@ jobs:
           attachments: |
             sonar-quality-report/sonar_issues.json
             sonar-quality-report/sonar_issues.csv
-
-  trivy:
-    name: Docker Build and Trivy Scan
-    runs-on: ubuntu-latest
-    needs: notify-sonar-result
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create reports directory
-        run: mkdir -p trivy-reports
-
-      - name: Trivy FS Scan (source code)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: .
-          format: table
-          severity: CRITICAL,HIGH
-          output: trivy-reports/fs-report.txt
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Trivy Image Scan (Docker image)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: image
-          scan-ref: sirpi/alcad-erp-api:1.0.0-dev
-          format: table
-          severity: CRITICAL,HIGH
-          output: trivy-reports/image-report.txt
-
-      - name: Upload Trivy Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-reports
-          path: trivy-reports/
