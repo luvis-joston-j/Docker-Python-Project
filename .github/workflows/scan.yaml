@@ -30,21 +30,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Notify on PR (GitHub comment)
-        if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          message: |
-            🛠️ Docker build has started for `${{ github.head_ref }}`.
-            We'll notify once it's complete!
-
-      - name: Notify on Slack (optional)
-        if: github.event_name == 'pull_request'
+      - name: Notify on Slack
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
             {
-              "text": "🛠️ Docker build started for `${{ github.head_ref }}` on PR #${{ github.event.pull_request.number }}."
+              "text": "🛠️ Docker build has started for branch `${{ github.ref_name }}` triggered by `${{ github.event_name }}`."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
